@@ -21,7 +21,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
 
 ## 2. Key Study Topics
 
-### 2.1 Splunk Fundamentals
+### 2.1 [Splunk Fundamentals](#splunk-fundamentals)
 - **Splunk Architecture and Components**
   - Search Heads, Indexers, Forwarders, Deployment Servers
   - How data flows through Splunk (indexing, searching)
@@ -33,7 +33,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
   - Advanced SPL commands (join, transaction, append)
   - Writing and optimizing SPL queries for performance
 
-### 2.2 Splunk Enterprise Security (ES)
+### 2.2 [Splunk Enterprise Security (ES)](#splunk-enterprise-security-es)
 - **Overview of Splunk ES**
   - Introduction to ES interface and components
   - Security domains: Asset and Identity Framework, Risk-Based Alerting (RBA)
@@ -45,7 +45,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
   - Managing and investigating notable events
   - Workflows for incident analysis and escalation
 
-### 2.3 Security Monitoring and Incident Response
+### 2.3 [Security Monitoring and Incident Response](#security-monitoring-and-incident-response)
 - **Security Use Cases**
   - Detecting anomalies, malicious insider activities, phishing, malware
   - Monitoring and alerting for unauthorized access attempts
@@ -57,7 +57,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
   - Generating and sharing security reports
   - Using pre-built dashboards for security use cases (e.g., MITRE ATT&CK)
 
-### 2.4 Threat Intelligence and Automation
+### 2.4 [Threat Intelligence and Automation](#threat-intelligence-and-automation)
 - **Integration of Threat Feeds**
   - Integrating third-party threat intelligence sources with Splunk
   - Using Threat Intelligence Framework in Splunk ES
@@ -68,7 +68,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
   - Automating responses to common threats (phishing, brute force attacks)
   - Integration of SOAR with other security tools (firewalls, IDS/IPS, etc.)
 
-### 2.5 Data Models and CIM (Common Information Model)
+### 2.5 [Data Models and CIM (Common Information Model)](#data-models-and-cim-common-information-model)
 - **CIM Overview**
   - Understanding the Common Information Model (CIM)
   - Mapping data to CIM-compliant data models
