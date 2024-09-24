@@ -149,7 +149,139 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
 
 ---
 
-Good luck with your studies!
+### 2.1 Splunk Fundamentals
+
+---
+
+#### **Splunk Architecture and Components**
+
+Understanding the key components of Splunk architecture is crucial for effectively using Splunk for security purposes. The architecture consists of the following elements:
+
+- **Search Heads**: Responsible for performing searches across indexed data. 
+  - Example: When you run a query, the Search Head distributes the search across multiple Indexers and aggregates the results.
+  
+- **Indexers**: Store and index data coming from different sources. Indexers also process incoming data and make it searchable.
+  - Example: When logs are ingested from firewalls, they are parsed and stored by the Indexers.
+
+- **Forwarders**: Forwarders collect and send data to Splunk Indexers. There are two types: **Universal Forwarder** (lightweight) and **Heavy Forwarder** (can parse data).
+  - Example: Use a Universal Forwarder to collect logs from multiple servers and send them to the central Indexer.
+
+- **Deployment Servers**: Deployment Servers manage configurations and distribute apps to all forwarders in your deployment.
+  - Example: A Deployment Server can push a new configuration to all forwarders for logging Windows events.
+
+**Data Flow in Splunk**:
+- Data flows through **forwarders** to the **indexers**, which then process, store, and make the data searchable via **search heads**.
+
+---
+
+#### **Data Inputs**
+
+Splunk can ingest data from various sources, and understanding how to configure data inputs is essential:
+
+- **Syslog Input**: One of the most common methods for sending logs from network devices and servers.
+  - Example: You can configure a syslog input to capture logs from a firewall by using the `UDP` protocol and listening on port 514.
+
+- **HTTP Event Collector (HEC)**: A method for sending data to Splunk using HTTP/HTTPS.
+  - Example: Sending data from cloud applications via HEC involves configuring an input on the HEC and using a POST request to send data.
+
+- **File Monitoring**: Splunk can monitor files or directories for changes and index the data.
+  - Example: Monitor `/var/log/auth.log` on a Linux system to capture login activity.
+
+**Index Time vs Search Time Operations**:
+- **Index Time**: When data is ingested, fields are extracted at index time, which allows for more efficient searching later.
+  - Example: Source type, host, and other metadata are extracted during data ingestion.
+  
+- **Search Time**: Some fields (like complex key-value pairs or dynamic fields) can be extracted at search time, which allows for more flexible searching.
+  - Example: Extracting HTTP response codes from logs dynamically during search.
+
+---
+
+#### **Search Processing Language (SPL) Basics**
+
+SPL is the core language used to query and analyze data within Splunk. Mastering these commands is crucial for both exam preparation and real-world Splunk usage.
+
+##### Core SPL Commands
+
+- **`stats`**: Performs statistical calculations on your data.
+  - Example: Calculate the count of events by HTTP status code.
+    ```spl
+    index=web_logs | stats count by status
+    ```
+
+- **`eval`**: Used to create new fields or manipulate existing fields.
+  - Example: Create a new field based on conditional logic.
+    ```spl
+    index=web_logs | eval status_type = if(status >= 400, "Error", "Success")
+    ```
+
+- **`table`**: Format the output as a table.
+  - Example: Display the IP and status fields in a table format.
+    ```spl
+    index=web_logs | table ip, status
+    ```
+
+- **`sort`**: Sort the results based on one or more fields.
+  - Example: Sort results by timestamp in descending order.
+    ```spl
+    index=web_logs | sort - _time
+    ```
+
+- **`timechart`**: Create a time-based chart to visualize data over time.
+  - Example: Count HTTP requests over time.
+    ```spl
+    index=web_logs | timechart count
+    ```
+
+##### Advanced SPL Commands
+
+- **`join`**: Combine data from multiple indexes or data sources based on a common field.
+  - Example: Join web logs and security logs by IP address.
+    ```spl
+    index=web_logs | join ip [search index=security_logs]
+    ```
+
+- **`transaction`**: Group events into transactions based on some criteria.
+  - Example: Group all actions taken by a single user session.
+    ```spl
+    index=web_logs | transaction session_id
+    ```
+
+- **`append`**: Append results of a subsearch to the current search results.
+  - Example: Append results from two different searches.
+    ```spl
+    index=web_logs | append [search index=security_logs]
+    ```
+
+---
+
+#### **Writing and Optimizing SPL Queries for Performance**
+
+Efficient query writing ensures that searches complete faster, especially in large-scale deployments.
+
+1. **Use Index Early**: Always specify the index as early as possible in your searches to reduce the amount of data to scan.
+   - Example: Start with `index=web_logs` instead of just searching globally.
+
+2. **Limit Time Range**: Restrict searches to specific time periods.
+   - Example: Use `earliest` and `latest` time modifiers.
+    ```spl
+    index=web_logs earliest=-1d latest=now
+    ```
+
+3. **Selective Field Search**: Use specific fields in the search to reduce the search scope.
+   - Example: Instead of searching all fields, focus on required ones like `status`.
+    ```spl
+    index=web_logs status=404
+    ```
+
+4. **Avoid Unnecessary Commands**: Don't use commands like `join` unless absolutely necessary, as they can slow down performance.
+   - Instead of using `join`, try restructuring your data model or use `lookup` or `stats` to achieve similar outcomes.
+
+5. **Parallel Processing**: Use `map` to parallelize searches when necessary, but use it sparingly as it increases load.
+
+   Example of using **`map`**:
+   ```spl
+   index=web_logs | map search="search index=security_logs ip=$ip$"
+
 
 
 
