@@ -18,7 +18,6 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
 - Advanced searches and dashboards to analyze security events
 
 ---
-
 ## 2. Key Study Topics
 
 ### 2.1 [Splunk Fundamentals](#splunk-fundamentals)
@@ -76,6 +75,56 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
   - Using Pivot to build CIM-compliant dashboards and reports
 - **Normalization Techniques**
   - Data normalization using field extractions and lookups
+
+### 2.6 [Splunk Administration (Optional)](#splunk-administration-optional)
+- **User Management and RBAC**
+  - Creating roles and managing users and permissions.
+  - Controlling access to data using role-based access control (RBAC).
+- **Index and Data Retention Policies**
+  - Configuring indexes and setting up retention policies for log data.
+- **Monitoring Splunk Deployment**
+  - Monitoring health, performance, and troubleshooting issues.
+
+### 2.7 [Advanced Security Use Cases in Splunk ES](#advanced-security-use-cases-in-splunk-es)
+- **MITRE ATT&CK Framework Integration**
+  - Mapping security events to the MITRE ATT&CK matrix.
+- **Threat Hunting with Splunk ES**
+  - Using Splunk for proactive threat hunting across various datasets.
+- **Risk-Based Alerting (RBA)**
+  - Prioritizing alerts based on risk using Splunk ES RBA.
+
+### 2.8 [Data Onboarding Best Practices](#data-onboarding-best-practices)
+- **Parsing and Normalization**
+  - Techniques for field extraction and data normalization in Splunk.
+- **Tuning Data Collection**
+  - Best practices for optimizing data collection, including specific use cases like firewall logs and application data.
+- **Using Splunk Add-ons**
+  - Leveraging Splunk technology add-ons for common data sources (e.g., Windows, AWS, Cisco).
+
+### 2.9 [Splunk SOAR (Optional)](#splunk-soar-optional)
+- **Introduction to Splunk SOAR**
+  - Overview of SOAR’s automation and orchestration capabilities.
+- **Creating Playbooks**
+  - Designing, testing, and optimizing playbooks for automated security responses.
+
+### 2.10 [Security Frameworks and Compliance](#security-frameworks-and-compliance)
+- **Using Splunk for Compliance**
+  - Implementing Splunk for regulatory audits (e.g., PCI, GDPR, HIPAA).
+- **Security Frameworks**
+  - Using Splunk to implement NIST, CIS Controls, and other frameworks.
+
+### 2.11 [Performance Tuning and Optimization](#performance-tuning-and-optimization)
+- **Optimizing Search Performance**
+  - Best practices for writing efficient SPL queries.
+  - Using summary indexing and report acceleration.
+- **Distributed Search Optimization**
+  - Configuring distributed search for large-scale deployments.
+
+### 2.12 [Disaster Recovery and High Availability](#disaster-recovery-and-high-availability)
+- **Splunk Replication and Failover**
+  - Configuring indexer and search head clustering for high availability.
+- **Backup and Restore**
+  - Backing up and restoring Splunk data and configurations.
 
 ---
 
@@ -866,5 +915,171 @@ Lookups are used to enhance your data by mapping fields from external data sourc
 ---
 
 This markdown structure maintains readability with proper headings, lists, and code blocks for examples. It ensures clean formatting for anyone referencing or studying the material.
+### 2.6 [Splunk Administration (Optional)](#splunk-administration-optional)
+
+---
+
+#### **User Management and RBAC (Role-Based Access Control)**
+
+Splunk provides robust **Role-Based Access Control (RBAC)** features that allow admins to control access to data, apps, and specific functionalities based on user roles.
+
+##### Creating Roles
+
+Roles define what a user is allowed to do and what data they can access. You can create custom roles or use built-in roles like `admin`, `power`, and `user`.
+
+**Example**:
+To create a new custom role (e.g., `security_analyst`) and assign specific capabilities:
+
+1. Go to **Settings** → **Access controls** → **Roles**.
+2. Click **New Role** and configure the role:
+   - **Role Name**: `security_analyst`
+   - **Inherit from**: `user` (to inherit basic search capabilities)
+   - **Indexes**: Add the indexes (e.g., `security_logs`) that this role can access.
+   - **Capabilities**: Select specific capabilities, such as:
+     - `edit_search_scheduler` (to schedule searches)
+     - `list_settings` (to view app settings)
+
+**Capabilities Overview**:
+- **Search-Related Capabilities**: Define the ability to search, schedule reports, and use real-time searches.
+- **Admin Capabilities**: Include abilities like managing users, editing data models, and configuring indexes.
+
+##### Managing Users and Assigning Roles
+
+To assign roles to users:
+1. Go to **Settings** → **Access controls** → **Users**.
+2. Click **New User** or edit an existing user.
+3. Specify:
+   - **Username**: e.g., `jdoe`
+   - **Role**: Assign the `security_analyst` role created earlier.
+
+**Example** (CLI):
+
+You can also add users via the CLI with the following command:
+```bash
+splunk add user jdoe -password changeme123 -role security_analyst -email jdoe@company.com
+```
+---
+
+### Controlling Access to Data
+
+RBAC allows fine-grained control over which indexes, apps, and search capabilities users have access to. For example, a `security_analyst` role might have access to only the `security_logs` index and not other operational data.
+
+**Use Case**: Restrict security analysts from viewing operational logs by only giving access to the `security_logs` index.
+- Configure the role with access to only the `security_logs` index in the role settings.
+
+---
+
+### Index and Data Retention Policies
+
+Indexes store data in Splunk, and managing these indexes is crucial for ensuring data availability, performance, and retention requirements.
+
+#### Configuring Indexes
+
+Each index in Splunk is configured with specific settings related to data storage, retention, and access control.
+
+**Example**: To create a new index called `security_logs`:
+
+1. Go to **Settings** → **Indexes** → **New Index**.
+2. Set the following configurations:
+   - **Index Name**: `security_logs`
+   - **Max Size**: Set the maximum size for the index (e.g., 500 GB).
+   - **Data Retention**: Set the retention period (e.g., 90 days).
+   - **Home Path**: Specify where the index data will be stored (e.g., `/opt/splunk/var/lib/splunk/security_logs`).
+
+---
+
+#### Data Retention Policies
+
+Retention policies control how long Splunk retains data before it is deleted. You can set retention policies based on:
+
+- **Maximum Index Size**: Once the index reaches this size, older data is deleted.
+- **Retention Period**: Once data is older than the specified retention period, it is removed.
+
+**Example**: Configure the `security_logs` index to retain data for 90 days:
+
+1. Go to **Settings** → **Indexes**.
+2. Click on the `security_logs` index.
+3. Under **Time-based Retention**, set **Retention Period** to `90` days.
+
+You can also set this via the `indexes.conf` configuration file:
+
+```ini
+[security_logs]
+homePath = /opt/splunk/var/lib/splunk/security_logs/db
+coldPath = /opt/splunk/var/lib/splunk/security_logs/colddb
+thawedPath = /opt/splunk/var/lib/splunk/security_logs/thaweddb
+maxTotalDataSizeMB = 500000
+frozenTimePeriodInSecs = 7776000  # 90 days in seconds
+```
+## Archiving Data
+
+Older data can be archived instead of being deleted. To enable archiving:
+
+1. Set the `frozenTimePeriodInSecs` in the `indexes.conf` file.
+2. Define a path to archive the frozen data (optional).
+
+---
+
+## Monitoring Splunk Deployment
+
+Monitoring the health of your Splunk deployment is key to ensuring reliable performance and identifying issues before they affect users.
+
+### Health Monitoring Dashboards
+
+Splunk provides built-in monitoring dashboards to track the health of search heads, indexers, and forwarders.
+
+- **Splunk Monitoring Console**: Go to **Settings** → **Monitoring Console** for an overview of your deployment’s health.
+   - **Indexer Performance**: Monitors indexing throughput, disk space usage, and CPU utilization on each indexer.
+   - **Search Head Performance**: Monitors search performance, load, and memory usage.
+   - **Forwarder Management**: Displays the status and health of all forwarders sending data to your Splunk instance.
+
+---
+
+### Troubleshooting
+
+Common issues to monitor and troubleshoot include:
+
+- **Indexer Disk Space**: Monitor indexer disk usage to avoid data loss due to full disks.
+- **Search Job Failures**: Identify and resolve failed search jobs using the monitoring console or search logs.
+
+**Example**: To monitor disk space usage on indexers:
+
+1. Open the **Monitoring Console**.
+2. Navigate to **Indexer -> Indexing Performance -> Indexing Rate & Volume**.
+
+You can also use an SPL query to monitor disk usage:
+
+```spl
+| dbinspect index=_internal | stats sum(rawSize) as total_size by splunk_server
+```
+ ### Alerts for Deployment Health
+
+Create alerts to notify the Splunk admin when specific health issues arise, such as disk space running low or forwarders disconnecting.
+
+**Example**: Create an alert to trigger when the disk space on an indexer is below 10%:
+
+```spl
+| rest /services/server/status/resource-usage/disk | search free < 10 | table splunk_server, free
+```
+1. **Save this search as an alert**:
+   - After running the search, click on the "Save As" option.
+   - Select "Alert" from the dropdown options.
+
+2. **Set trigger conditions**:
+   - Under the "Alert Type," choose "Once" if you want the alert to trigger one time or "Per result" for multiple triggers.
+   - Set the condition to trigger when the disk space is below 10%.
+   - Configure the alert to send a notification via email when the condition is met by entering the recipient's email address under the "Send Email" option.
+
+---
+
+### Key Concepts Covered:
+
+- **User Management and RBAC**: Creating roles, assigning users, and controlling data access.
+- **Index Configuration**: Setting up indexes and retention policies to manage log data efficiently.
+- **Monitoring and Troubleshooting**: Using built-in dashboards and custom searches to monitor Splunk's health and identify issues early.
+
+---
+
+This section covers the key aspects of **Splunk Administration**, including managing users and roles, configuring indexes and data retention, and monitoring the health of your Splunk deployment. These skills are essential for ensuring your Splunk environment operates smoothly and securely.
 
 
