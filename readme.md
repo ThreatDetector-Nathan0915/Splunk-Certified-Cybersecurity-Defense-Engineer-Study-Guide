@@ -735,3 +735,136 @@ Automatically trigger rules on your intrusion detection/prevention systems (IDS/
 #### Example:
 
 Create a Splunk alert to trigger a custom rule in **Snort** or **Suricata** when suspicious traffic is detected.
+
+### 2.5 <a name="data-models-and-cim-common-information-model"></a> Data Models and CIM (Common Information Model)
+
+---
+
+#### **CIM Overview**
+
+The **Common Information Model (CIM)** in Splunk is a shared data model framework that allows users to normalize data from various sources into a consistent structure. This enables cross-source correlation and analysis by mapping raw data into predefined fields and tags across different data sources.
+
+##### Understanding the Common Information Model (CIM)
+
+- **CIM Standardization**: The CIM provides a common format for data generated from different sources (e.g., firewall logs, proxy logs, endpoint security logs). By standardizing the data structure, Splunk ES users can perform searches, correlation, and reporting across different datasets more efficiently.
+
+- **CIM Add-on**: The Splunk CIM add-on helps map your data to predefined data models by providing field extractions, lookups, and tags.
+
+  **Example**: For network traffic logs, fields such as `src_ip`, `dest_ip`, and `action` are standardized across logs from firewalls, routers, and other network devices.
+
+##### Mapping Data to CIM-Compliant Data Models
+
+Mapping your data to the CIM involves ensuring that fields from your raw data are extracted and renamed to match the fields defined by the CIM.
+
+- **CIM-Ready Add-Ons**: Many Splunk technology add-ons (TAs) are already CIM-compliant, meaning they automatically map the ingested data to the appropriate CIM data models. Examples include the Splunk Add-ons for Windows, Cisco ASA, and AWS.
+
+  **Example**: When using the **Splunk Add-on for Windows**, the authentication logs from Windows systems are automatically mapped to the Authentication data model, using fields like `src`, `dest`, and `user`.
+
+- **Custom Field Mapping**: If you're working with a custom data source, you may need to manually map fields to the appropriate CIM fields.
+
+  **Example**: Manually mapping a custom data source to the Web data model:
+  
+  ```spl
+  index=custom_logs sourcetype=custom_web_logs 
+  | eval action=if(http_status=200, "allowed", "blocked")
+  | eval user=user_name
+  | eval src=client_ip
+  ```
+### Important CIM Data Models
+
+Key data models you should be familiar with for the exam:
+
+- **Authentication**: Tracks login activities, including successes, failures, and anomalies. Fields include `src`, `dest`, `user`, `app`, `action`.
+- **Network Traffic**: Monitors network activity and security, including inbound and outbound traffic. Fields include `src_ip`, `dest_ip`, `bytes_in`, `bytes_out`, `action`.
+- **Endpoint**: Monitors endpoint activities such as processes, file changes, and user logins. Fields include `file_name`, `process_name`, `user`, `src_ip`.
+- **Web**: Logs web server activity and security, such as requests, errors, and actions. Fields include `http_method`, `src_ip`, `url`, `action`.
+
+---
+
+### Pivot Reports
+
+Splunk’s **Pivot** feature allows you to build reports and dashboards without needing to write SPL. Pivot works by querying CIM-compliant data models, making it easier to create customized visualizations based on normalized data.
+
+---
+
+#### Using Pivot to Build CIM-Compliant Dashboards and Reports
+
+- **Pivot Interface**: The Pivot interface provides a drag-and-drop way to create charts, tables, and visualizations by selecting fields from the underlying CIM data models.
+
+  **Example**: Building a report to visualize the number of successful vs. failed login attempts over time.
+  - Go to Pivot in Splunk.
+  - Select the Authentication data model.
+  - Drag `action` to the row field (filter for success and failure).
+  - Drag `time` to the column field.
+  - Choose a visualization (e.g., bar chart, line chart).
+
+  This will create a visual report showing login activity over time, categorized by success and failure.
+
+- **CIM Data Model Mapping for Pivot**: Since Pivot works only with CIM-compliant data, ensure your data is mapped correctly to the respective CIM fields for accurate reporting.
+
+  **Example Pivot Use Case**:
+  
+  - **Security Dashboard**: Create a dashboard that displays security incidents across multiple data sources, such as authentication failures, network traffic anomalies, and endpoint activities.
+  
+    - Bar chart showing failed login attempts over the past 7 days.
+    - Line chart tracking network traffic volume (`bytes_in` and `bytes_out`) by `src_ip` and `dest_ip`.
+
+---
+
+### Normalization Techniques
+
+Normalization is the process of converting raw data into a standardized format. This allows data from different sources to be used in searches, reports, and dashboards consistently. Splunk uses field extractions and lookups to normalize data into the CIM.
+
+---
+
+#### Data Normalization Using Field Extractions
+
+Field extractions in Splunk are used to map raw data to CIM fields by extracting key-value pairs from logs. These can be created manually or by using Splunk’s **Field Extractor tool**.
+
+- **Field Extractor Tool**: This tool helps automatically identify and extract fields from raw events.
+
+  **Example of creating a field extraction for HTTP logs**:
+
+  ```regex
+  (?<src_ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) - - \[(?<time>[^\]]+)\] "(?<http_method>[^"]+) (?<url>[^"]+) HTTP/(?<version>[^"]+)" (?<http_status>\d+)
+  ```
+  This extraction will map the source IP, time, HTTP method, URL, and HTTP status code from the raw log to standardized field names.
+
+---
+
+### Data Normalization Using Lookups
+
+Lookups are used to enhance your data by mapping fields from external data sources to fields within Splunk.
+
+- **Lookup Table**: A table that contains information that can be referenced during a search to enrich or normalize data.
+
+  **Example**: Normalizing IP addresses with geolocation data:
+
+  ```spl
+  index=network_logs | lookup geoip ip as src_ip OUTPUT city, country
+  ```
+  This lookup enriches the raw IP addresses with city and country fields, allowing for more detailed analysis.
+
+---
+
+### Best Practices for Data Normalization
+
+- **Use Consistent Naming Conventions**: Ensure field names are consistent across different data sources by mapping them to CIM-compliant fields.
+- **Test Your Extractions**: Validate field extractions in small datasets before applying them to larger data sources to avoid performance issues.
+- **Leverage Automatic Lookups**: Configure automatic lookups in `props.conf` to ensure that fields are enriched automatically whenever data is ingested.
+
+---
+
+### Summary of Key Study Points
+
+- **Understand the Purpose of CIM**: CIM is crucial for ensuring data from multiple sources can be analyzed consistently within Splunk ES.
+- **Familiarize Yourself with Key Data Models**: Know the most important CIM data models (e.g., Authentication, Network Traffic, Web) and the fields they use.
+- **Master Pivot for Reporting**: Practice creating reports and dashboards using the Pivot interface to ensure you're comfortable building CIM-compliant visualizations.
+- **Practice Field Extractions and Lookups**: Ensure you understand how to extract fields and use lookups to normalize data into CIM-compliant formats.
+- **Know How to Map Data to CIM**: Understand how to map custom data sources to the appropriate CIM data models by using field extractions and lookups.
+
+---
+
+This markdown structure maintains readability with proper headings, lists, and code blocks for examples. It ensures clean formatting for anyone referencing or studying the material.
+
+
