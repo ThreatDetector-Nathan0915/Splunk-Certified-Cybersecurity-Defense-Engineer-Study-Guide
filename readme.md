@@ -149,8 +149,7 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
 
 ---
 
-### 2.1 Splunk Fundamentals
-## <a name="splunk-fundamentals"></a> Splunk Fundamentals
+### 2.1 <a name="splunk-fundamentals"></a> Splunk Fundamentals
 
 ---
 
@@ -283,8 +282,7 @@ Efficient query writing ensures that searches complete faster, especially in lar
    ```spl
    index=web_logs | map search="search index=security_logs ip=$ip$"
    ```
-### 2.2 Splunk Enterprise Security (ES)
-## <a name="splunk-enterprise-security-es"></a> Splunk Enterprise Security (ES)
+### 2.2 <a name="splunk-enterprise-security-es"></a> Splunk Enterprise Security (ES)
 
 
 ---
@@ -394,8 +392,7 @@ Notable events are the central mechanism for investigating incidents in Splunk E
 3. The analyst investigates the associated logs, identifies a successful login from an unusual location, and escalates the incident.
 4. The incident is resolved after the user confirms the login was legitimate, or remediation actions are taken (e.g., disabling the user account).
 
-### 2.3 Security Monitoring and Incident Response
-## <a name="security-monitoring-and-incident-response"></a> Security Monitoring and Incident Response
+### 2.3 <a name="security-monitoring-and-incident-response"></a> Security Monitoring and Incident Response
 
 
 ---
@@ -566,8 +563,7 @@ Splunk ES includes several pre-built dashboards designed for specific security u
 
   - You can customize this dashboard by adding your own searches and correlating data from internal logs with ATT&CK techniques.
  
-    ## 2.4 Threat Intelligence and Automation
-    ## <a name="threat-intelligence-and-automation"></a> Threat Intelligence and Automation
+    ## 2.4 <a name="threat-intelligence-and-automation"></a> Threat Intelligence and Automation
 
 
 ---
