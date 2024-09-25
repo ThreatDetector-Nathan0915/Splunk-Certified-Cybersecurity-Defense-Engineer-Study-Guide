@@ -1,4 +1,4 @@
-# Splunk Certified Cybersecurity Defense Engineer Study Guide
+# Splunk Certified Cybersecurity Defense Engineer Study Guide [SPLK-5002]
 
 ## Overview
 This study guide is designed to help you prepare for the **Splunk Certified Cybersecurity Defense Engineer** exam. It covers key topics, concepts, and resources that you need to master to pass the exam. Customize this template based on your progress and learning style.
