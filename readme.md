@@ -1082,4 +1082,215 @@ Create alerts to notify the Splunk admin when specific health issues arise, such
 
 This section covers the key aspects of **Splunk Administration**, including managing users and roles, configuring indexes and data retention, and monitoring the health of your Splunk deployment. These skills are essential for ensuring your Splunk environment operates smoothly and securely.
 
+## 2.7 Advanced Security Use Cases in Splunk ES
+
+### **MITRE ATT&CK Framework Integration**
+
+Splunk Enterprise Security (ES) offers out-of-the-box integration with the **MITRE ATT&CK framework**, which provides visibility into adversary tactics and techniques. By mapping security events to the **ATT&CK matrix**, security teams can detect and respond to threats in a structured and methodical way.
+
+#### **Key Concepts**:
+- **MITRE ATT&CK Matrix**: A knowledge base of adversarial tactics and techniques based on real-world cybersecurity incidents.
+- **Integration in Splunk**:
+  - Splunk ES maps security events and alerts to the MITRE ATT&CK framework using **Data Models** and **Correlation Searches**.
+  - Analysts can visually map detected attack behaviors to corresponding ATT&CK techniques, making it easier to detect attack patterns and identify the phases of an attack.
+
+#### **Example**:
+- **Event Detection**: Detecting **PowerShell script execution** and mapping it to the ATT&CK technique "T1059.001 - Command and Scripting Interpreter: PowerShell."
+- **Correlation Search**:
+  ```spl
+  index=main sourcetype=WinEventLog:PowerShell EventCode=4104 
+  | table _time, user, ScriptBlockText
+  | eval ATTACK_Technique = "T1059.001"
+  ```
+## Threat Hunting with Splunk ES
+
+Threat hunting is the process of proactively searching for abnormal activity across your environment. **Splunk ES** provides robust tools and frameworks to conduct threat hunting at scale, helping analysts identify malicious behavior that may go unnoticed by automated alerts.
+
+### **Key Concepts**:
+- **Proactive Threat Hunting**: Analysts manually search across datasets, looking for signs of malicious activity, rather than waiting for traditional alerts.
+- **Dataset Exploration**: Logs from various sources like firewall logs, DNS queries, and endpoint data can reveal hidden threats.
+- **Searches for Anomalous Behavior**:
+  - **Example Query**: Look for uncommon parent-child process relationships:
+    ```spl
+    index=main sourcetype=WinEventLog EventCode=4688
+    | stats count by ParentImage, Image
+    | sort - count
+    | where count < 5
+    ```
+  This query helps identify suspicious or uncommon processes that are typically associated with lateral movement or malicious execution.
+
+### **Example Use Case**:
+- **Detecting Suspicious Lateral Movement**: Use DNS traffic, Windows Event logs, and process data to detect abnormal access patterns between systems that may indicate lateral movement attempts.
+
+---
+
+## Risk-Based Alerting (RBA)
+
+**Risk-Based Alerting (RBA)** in Splunk ES helps prioritize security alerts by assigning **risk scores** to events. RBA reduces alert fatigue by focusing on events that are most critical to the environment based on accumulated risk scores.
+
+### **Key Concepts**:
+- **Risk Modifiers**: Each security event is assigned a risk score based on its severity. These risk scores accumulate for a given entity (e.g., user or host) based on its activities and their associated risk.
+- **RBA Use Cases**: High-risk alerts are only generated when the cumulative risk score exceeds a certain threshold, minimizing unnecessary alerts.
+
+### **Example**:
+- **Create Risk Score for Unauthorized File Access**:
+  ```spl
+  index=main sourcetype=WinEventLog EventCode=4663 Object_Type=File 
+  | eval risk_score = case(User="suspicious_user", 10, User!="suspicious_user", 1)
+  | outputlookup append=true risk_score_lookup
+  ```
+## Risk-Based Alerting (RBA) in Splunk ES
+
+Risk-Based Alerting (RBA) in **Splunk ES** assigns risk scores to security events based on the severity of the detected behavior. This helps prioritize alerts by focusing on high-risk activities and reducing alert fatigue caused by low-priority alerts.
+
+### Key Concepts:
+- **Risk Modifiers**: Risk scores are calculated based on the risk severity of the event. The total risk score for a user or host accumulates as more suspicious activities are detected.
+- **RBA Use Cases**: High-risk alerts are only generated when the cumulative risk score for an entity exceeds a certain threshold, allowing security analysts to focus on the most critical threats.
+
+### Example:
+- **Assigning Risk Score for Unauthorized File Access**:
+  This query assigns higher risk scores to a specific user performing unauthorized file access:
+  ```spl
+  index=main sourcetype=WinEventLog EventCode=4663 Object_Type=File 
+  | eval risk_score = case(User="suspicious_user", 10, User!="suspicious_user", 1)
+  | outputlookup append=true risk_score_lookup
+  ```
+## Correlating Risk Scores Over Time
+
+To track the cumulative risk score for a user or entity over time, **Splunk ES** allows you to create correlation searches that aggregate risk scores from multiple events. This helps analysts monitor users or hosts that exhibit a growing pattern of risky behavior, even if individual events don't trigger an alert on their own.
+
+### Correlation Search Example:
+The following **Splunk query** aggregates risk scores from previous events stored in a lookup table and filters entities with a total risk score higher than 50:
+```spl
+| inputlookup risk_score_lookup
+| stats sum(risk_score) as total_risk by User
+| where total_risk > 50
+```
+Study Materials:
+Splunk Documentation: MITRE ATT&CK Framework Integration
+Splunk Docs: Threat Hunting Guide
+Risk-Based Alerting in Splunk
+
+## 2.8 [Data Onboarding Best Practices](#data-onboarding-best-practices)
+
+### **Parsing and Normalization**
+
+**Parsing and normalization** are critical steps in data onboarding in Splunk to ensure data consistency, usability, and accurate search results. Parsing refers to extracting fields from raw data, while normalization ensures data from different sources can be correlated and analyzed uniformly.
+
+#### **Best Practices**:
+- Use **Field Extraction** techniques such as **Regex-based extractions** and **Delimited extractions** to ensure fields are correctly parsed.
+- Leverage **Splunk's Common Information Model (CIM)** to normalize data fields across different sources, ensuring consistent naming conventions and types.
+  
+#### **Example**:
+- Use **Splunk's Interactive Field Extractor** (IFX) for simple field extractions or **Transforms.conf** for more advanced cases.
+- For normalization, map fields such as `src_ip`, `dst_ip`, and `user` across various data sources like firewall logs, web traffic, and authentication logs.
+
+### **Tuning Data Collection**
+
+Optimizing data collection ensures that Splunk ingests only relevant data, minimizing storage use and improving query performance.
+
+#### **Best Practices**:
+- **Filter Unnecessary Data**: Use **inputs.conf** to specify what data gets indexed, avoiding unnecessary ingestion of verbose logs.
+- **Sample Data**: Enable **data sampling** for high-volume data sources to reduce ingestion rates.
+- **Data Throttling**: Configure **throttling** mechanisms for specific sources (e.g., firewall logs or syslog data) to limit overloading the indexer.
+
+#### **Use Case**:
+- **Firewall Logs**: Tune firewall data ingestion by excluding common or benign traffic such as local subnet traffic or known safe applications.
+  ```bash
+  [monitor://path/to/firewall/logs]
+  index=firewall
+  whitelist=.*\.log$
+  blacklist=.*subnet\.log$
+  ```
+## Using Splunk Add-ons
+
+**Splunk Technology Add-ons (TAs)** extend Splunk’s capability to collect, parse, and normalize data from specific technologies (e.g., Windows, AWS, Cisco), enabling organizations to onboard data without needing to build custom parsers.
+
+### **Best Practices**:
+- Use the **Splunkbase** marketplace to find TAs for common data sources.
+- Ensure that TAs are **up-to-date** to leverage new product features and fields.
+- Install **CIM-compliant** TAs to utilize Splunk’s **Common Information Model (CIM)** for normalized field extraction.
+
+### **Example Add-ons**:
+- **Splunk Add-on for Windows**: Handles Windows Event Logs, Active Directory logs, and performance monitoring data.
+- **Splunk Add-on for AWS**: Collects and normalizes data from AWS services such as CloudWatch, CloudTrail, and S3.
+- **Splunk Add-on for Cisco ASA**: Parses and normalizes logs from Cisco ASA firewalls, allowing easy correlation and search.
+
+### **Study Materials**:
+- [Splunk Documentation: Data Onboarding](https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheSplunkWebinterfacetomonitorfilesanddirectories)
+- [Splunkbase: Technology Add-ons](https://splunkbase.splunk.com/)
+## 2.9 [Splunk SOAR (Optional)](#splunk-soar-optional)
+
+### **Introduction to Splunk SOAR**
+
+**Splunk SOAR** (Security Orchestration, Automation, and Response) is a security platform that enhances operational efficiency through **automation** and **orchestration**. It enables security teams to automate repetitive tasks and coordinate multiple tools and processes, which reduces manual effort, speeds up incident response, and increases overall security posture.
+
+#### **Key Capabilities**:
+- **Automation**: Automates repetitive security tasks, such as threat intelligence lookups, malware analysis, and log collection.
+- **Orchestration**: Integrates multiple security tools and technologies, allowing them to work together efficiently.
+- **Case Management**: Facilitates incident management by tracking and documenting every step of the incident response process.
+
+#### **Use Case Example**:
+- Automate malware threat intelligence lookups using integrated third-party tools like VirusTotal and automatically respond by isolating affected devices.
+
+### **Creating Playbooks**
+
+**Playbooks** in Splunk SOAR are automated workflows that execute pre-defined actions in response to specific security events. Playbooks help automate repetitive tasks and ensure consistent responses to security incidents.
+
+#### **Best Practices for Playbook Design**:
+- **Modular Design**: Break down complex actions into smaller, reusable components.
+- **Testing**: Thoroughly test each playbook in a controlled environment to ensure accurate and reliable execution.
+- **Optimization**: Regularly review and optimize playbooks based on feedback, incident trends, and emerging threats.
+
+#### **Example Playbook**:
+- **Phishing Email Response**:
+  - Automate the process of extracting indicators from phishing emails, checking them against threat intelligence feeds, and automatically blocking suspicious IP addresses or domains.
+
+#### **Study Materials**:
+- [Splunk SOAR Documentation](https://docs.splunk.com/Documentation/SOAR)
+- [Splunk SOAR Playbook Tutorial](https://www.splunk.com/en_us/blog/security/soar-playbooks-101.html)
+
+## 2.10 [Security Frameworks and Compliance](#security-frameworks-and-compliance)
+
+### **Using Splunk for Compliance**
+
+Splunk is a powerful tool for helping organizations meet various regulatory compliance requirements such as **PCI DSS**, **GDPR**, and **HIPAA**. By leveraging Splunk’s data ingestion, monitoring, and reporting capabilities, you can streamline audits and ensure continuous compliance.
+
+#### **Key Compliance Use Cases**:
+- **PCI DSS**: Splunk can track and log all access to cardholder data and create compliance reports for audits.
+- **GDPR**: With Splunk, you can track user activity, monitor data access, and ensure that data processing is compliant with the EU’s General Data Protection Regulation (GDPR).
+- **HIPAA**: Splunk allows healthcare organizations to monitor access to electronic protected health information (ePHI), and generate reports to ensure compliance with the Health Insurance Portability and Accountability Act (HIPAA).
+
+#### **Example**:
+- **PCI DSS Compliance**: You can use Splunk's prebuilt compliance dashboards to monitor and report on cardholder data access and encryption logs.
+  ```spl
+  index=main sourcetype="access_logs"
+  | stats count by user, action, timestamp
+  | where action="access_cardholder_data"
+  ```
+## Security Frameworks
+
+Splunk supports the implementation of industry-standard security frameworks such as **NIST** and **CIS Controls**, enabling organizations to align their security practices with widely recognized best practices.
+
+### **Key Frameworks**:
+- **NIST Cybersecurity Framework**: The National Institute of Standards and Technology (NIST) framework helps organizations manage cybersecurity risks by focusing on five key functions: **Identify**, **Protect**, **Detect**, **Respond**, and **Recover**.
+- **CIS Controls**: Splunk assists organizations in implementing the **Center for Internet Security (CIS) Controls** by providing data visibility, detecting security gaps, and automating security responses. These controls help organizations improve their cybersecurity posture.
+
+### **Example**:
+- **NIST Framework**: Use Splunk to monitor the "Detect" function by setting up alerts for anomalous network behavior.
+  ```spl
+  index=main sourcetype="network_traffic"
+  | stats count by src_ip, dest_ip, action
+  | where action="denied"
+  ```
+### **Best Practices**:
+- Use **Splunk CIM (Common Information Model)** to normalize data across multiple security frameworks, ensuring consistent field names and formats for better correlation and reporting.
+- Leverage **prebuilt Splunk dashboards** for specific compliance standards like **PCI DSS** and **HIPAA** to monitor and report compliance in real-time.
+- Regularly **audit and adjust compliance configurations** to stay updated with evolving regulatory changes and ensure continuous alignment with security frameworks.
+
+### **Study Materials**:
+- [Splunk Documentation: Compliance Solutions](https://docs.splunk.com/Documentation/Splunk/latest/Security/Compliance)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+- [CIS Controls and Splunk](https://www.cisecurity.org/controls/)
+
 
