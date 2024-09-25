@@ -915,7 +915,7 @@ Lookups are used to enhance your data by mapping fields from external data sourc
 ---
 
 This markdown structure maintains readability with proper headings, lists, and code blocks for examples. It ensures clean formatting for anyone referencing or studying the material.
-### 2.6 [Splunk Administration (Optional)](#splunk-administration-optional)
+## 2.6 <a name="splunk-administration-optional"></a> Splunk Administration (Optional)
 
 ---
 
@@ -1082,7 +1082,7 @@ Create alerts to notify the Splunk admin when specific health issues arise, such
 
 This section covers the key aspects of **Splunk Administration**, including managing users and roles, configuring indexes and data retention, and monitoring the health of your Splunk deployment. These skills are essential for ensuring your Splunk environment operates smoothly and securely.
 
-## 2.7 Advanced Security Use Cases in Splunk ES
+## 2.7 <a name="advanced-security-use-cases-in-splunk-es"></a> Advanced Security Use Cases in Splunk ES
 
 ### **MITRE ATT&CK Framework Integration**
 
@@ -1171,7 +1171,7 @@ Splunk Documentation: MITRE ATT&CK Framework Integration
 Splunk Docs: Threat Hunting Guide
 Risk-Based Alerting in Splunk
 
-## 2.8 [Data Onboarding Best Practices](#data-onboarding-best-practices)
+## 2.8 <a name="data-onboarding-best-practices"></a> Data Onboarding Best Practices
 
 ### **Parsing and Normalization**
 
@@ -1219,7 +1219,7 @@ Optimizing data collection ensures that Splunk ingests only relevant data, minim
 ### **Study Materials**:
 - [Splunk Documentation: Data Onboarding](https://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheSplunkWebinterfacetomonitorfilesanddirectories)
 - [Splunkbase: Technology Add-ons](https://splunkbase.splunk.com/)
-## 2.9 [Splunk SOAR (Optional)](#splunk-soar-optional)
+## 2.9 <a name="splunk-soar-optional"></a> Splunk SOAR (Optional)
 
 ### **Introduction to Splunk SOAR**
 
@@ -1250,7 +1250,7 @@ Optimizing data collection ensures that Splunk ingests only relevant data, minim
 - [Splunk SOAR Documentation](https://docs.splunk.com/Documentation/SOAR)
 - [Splunk SOAR Playbook Tutorial](https://www.splunk.com/en_us/blog/security/soar-playbooks-101.html)
 
-## 2.10 [Security Frameworks and Compliance](#security-frameworks-and-compliance)
+## 2.10 <a name="security-frameworks-and-compliance"></a> Security Frameworks and Compliance
 
 ### **Using Splunk for Compliance**
 
@@ -1294,7 +1294,7 @@ Splunk supports the implementation of industry-standard security frameworks such
 - [CIS Controls and Splunk](https://www.cisecurity.org/controls/)
 
 
-## 2.11 [Performance Tuning and Optimization](#performance-tuning-and-optimization)
+## 2.11 <a name="performance-tuning-and-optimization"></a> Performance Tuning and Optimization
 
 ### **Optimizing Search Performance**
 
@@ -1343,7 +1343,7 @@ In large deployments, configure **search parallelization** to allow multiple sea
 [search]
 max_searches_per_cpu = <value>
 ```
-## 2.12 [Disaster Recovery and High Availability](#disaster-recovery-and-high-availability)
+## 2.12 <a name="disaster-recovery-and-high-availability"></a> Disaster Recovery and High Availability
 
 ### **Splunk Replication and Failover**
 
