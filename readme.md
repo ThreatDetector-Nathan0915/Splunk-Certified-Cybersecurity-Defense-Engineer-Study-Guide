@@ -7,9 +7,9 @@ This study guide is designed to help you prepare for the **Splunk Certified Cybe
 
 ## 1. Exam Information
 - **Certification Name**: Splunk Certified Cybersecurity Defense Engineer
-- **Exam Duration**: 60-90 minutes
-- **Question Types**: Multiple choice, multiple response
-- **Prerequisites**: Splunk Core Certified Power User, experience in cybersecurity operations
+- **Exam Duration**: 120 minutes
+- **Question Types**: 100 Multiple choice, multiple response
+- **Prerequisites**: Splunk Certified Cybersecurity Defense Analyst [SPLK-5001]
 
 ### Key Skills Measured:
 - Using Splunk to identify and respond to cybersecurity threats
