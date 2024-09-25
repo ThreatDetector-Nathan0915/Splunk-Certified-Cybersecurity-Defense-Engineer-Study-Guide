@@ -1294,3 +1294,109 @@ Splunk supports the implementation of industry-standard security frameworks such
 - [CIS Controls and Splunk](https://www.cisecurity.org/controls/)
 
 
+## 2.11 [Performance Tuning and Optimization](#performance-tuning-and-optimization)
+
+### **Optimizing Search Performance**
+
+Optimizing search performance in Splunk is critical to ensure fast and efficient queries, especially in large datasets. By following best practices for writing efficient **Search Processing Language (SPL)** queries and utilizing advanced Splunk features, you can improve the performance of your searches and reports.
+
+#### **Best Practices for Writing Efficient SPL Queries**:
+- **Limit Data Retrieval**: Use filters to narrow down the search scope at the beginning of the query (e.g., specific index, time range, and sourcetype).
+  - Example:
+    ```spl
+    index=main sourcetype=access_combined earliest=-7d
+    ```
+- **Selective Field Extraction**: Use the `fields` command to only extract necessary fields, reducing processing time.
+  - Example:
+    ```spl
+    index=main sourcetype=access_combined | fields src_ip, dest_ip, response_time
+    ```
+- **Avoid Wildcards at the Beginning of Strings**: Avoid wildcard searches (`*string`) at the start of search terms as they slow down queries.
+- **Use Event Sampling**: For larger datasets, use **event sampling** in initial testing of queries to get quick feedback before running the full query.
+
+#### **Using Summary Indexing and Report Acceleration**:
+- **Summary Indexing**: Reduces the need to search through raw data repeatedly. It pre-calculates and stores data in a **summary index** to be accessed faster in future queries.
+  - Example of enabling summary indexing:
+    ```spl
+    index=main sourcetype=access_combined
+    | stats count by status
+    | collect index=summary_index
+    ```
+- **Report Acceleration**: Enable **acceleration** for reports that are run frequently. This feature pre-computes results and speeds up execution without re-processing the same data.
+  - To enable report acceleration, navigate to the report settings in Splunk and toggle "Acceleration."
+
+---
+
+### **Distributed Search Optimization**
+
+For large-scale deployments, Splunk allows **distributed search** across multiple indexers and search heads. Optimizing distributed search involves tuning configurations to ensure the best performance across clusters of nodes.
+
+#### **Configuring Distributed Search for Large-Scale Deployments**:
+- **Search Head Clustering**: Ensure search heads are **clustered** to distribute search processing across multiple nodes. This improves search performance and redundancy.
+- **Indexer Clustering**: Use **indexer clusters** to balance data indexing and retrieval loads. This configuration helps prevent performance bottlenecks by distributing workload across multiple indexers.
+- **Use Search Affinity**: Configure **search affinity** to ensure that search jobs are executed on indexers where the relevant data resides, reducing network latency.
+- **Optimize Network Settings**: In distributed environments, ensure **high bandwidth** and **low latency** connections between search heads and indexers to minimize delays during searches.
+
+#### **Example**:
+In large deployments, configure **search parallelization** to allow multiple searches to run simultaneously across indexers. Use the following configuration in **limits.conf** to adjust search parallelization:
+```ini
+[search]
+max_searches_per_cpu = <value>
+```
+## 2.12 [Disaster Recovery and High Availability](#disaster-recovery-and-high-availability)
+
+### **Splunk Replication and Failover**
+
+Ensuring **high availability** and **disaster recovery** in Splunk involves configuring indexer and search head clustering to provide failover and data replication capabilities. This ensures that Splunk remains operational and data is protected in the event of hardware or network failures.
+
+#### **Indexer Clustering**:
+- **Indexer Clustering** in Splunk ensures that data is replicated across multiple indexers for redundancy. If one indexer fails, other indexers in the cluster can still serve the data.
+- **Replication Factor**: Controls how many copies of each data bucket are stored across indexers. A higher replication factor increases redundancy.
+  - Example configuration in **indexes.conf**:
+    ```ini
+    [clustering]
+    mode = master
+    replication_factor = 3
+    ```
+- **Search Factor**: Defines how many replicated copies of data are searchable. A higher search factor ensures that searches can be performed even if indexers are down.
+
+#### **Search Head Clustering**:
+- **Search Head Clustering** provides redundancy for search heads, ensuring that searches can still be run if a search head goes down.
+- **Captain Election**: One search head in the cluster is elected as the "captain," which coordinates searches across the cluster. If the captain fails, another search head takes over.
+
+#### **Best Practices for Failover**:
+- Configure **data replication** with adequate replication and search factors to ensure fault tolerance.
+- Implement **load balancers** in front of search heads to distribute user queries and ensure continuity in case of a search head failure.
+
+---
+
+### **Backup and Restore**
+
+Backing up Splunk data and configurations is crucial for recovering from disasters and maintaining operational continuity. Splunk provides tools and processes to back up both data and configuration settings for disaster recovery scenarios.
+
+#### **Backup Best Practices**:
+- **Back Up Indexed Data**: Regularly back up the contents of `$SPLUNK_DB` (the default directory for indexed data) to ensure all critical data is saved.
+- **Configuration Backup**: Back up configuration files such as `inputs.conf`, `outputs.conf`, `props.conf`, and `transforms.conf`. These files contain settings related to data inputs, forwarding, field extractions, and more.
+
+#### **Restoring from Backup**:
+- To restore from a backup, simply copy the backup of the indexed data to the `$SPLUNK_DB` directory and restart Splunk. Ensure that configuration files are restored as well.
+
+#### **Example Backup Process**:
+```bash
+# Backup Indexed Data
+rsync -av /opt/splunk/var/lib/splunk/ /path/to/backup/
+
+# Backup Configurations
+rsync -av /opt/splunk/etc/ /path/to/backup/
+```
+
+#### **Best Practices**:
+-Perform backups during low-traffic periods to avoid affecting Splunk’s performance and ensure data integrity.
+
+-Automate backups using cron jobs or other scheduling tools to ensure regular and consistent data protection.
+
+Example cron job for daily backups
+```
+# Backup Splunk data every day at 2:00 AM
+0 2 * * * rsync -av /opt/splunk/var/lib/splunk/ /path/to/backup/
+```
